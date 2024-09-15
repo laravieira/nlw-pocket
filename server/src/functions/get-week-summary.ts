@@ -42,7 +42,6 @@ export async function getWeekSummary() {
     db
       .select({
         completedAtDate: goalCompletedThisWeek.completedAtDate,
-        // completions: sql`JSON_AGG(${goalCompletedThisWeek})`.as('completions'),
         completions: sql`JSON_AGG(
           JSON_BUILD_OBJECT(
             'id', ${goalCompletedThisWeek.id},
