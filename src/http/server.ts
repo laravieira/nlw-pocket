@@ -1,6 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { env } from '@/env'
+import fastifyCors from '@fastify/cors'
 import fastify from 'fastify'
 import {
   type ZodTypeProvider,
@@ -9,6 +10,9 @@ import {
 } from 'fastify-type-provider-zod'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
+
+app.register(fastifyCors, { origin: '*' })
+
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
 
