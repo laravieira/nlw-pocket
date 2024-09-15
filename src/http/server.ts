@@ -1,52 +1,26 @@
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+import { env } from '@/env'
 import fastify from 'fastify'
 import {
   type ZodTypeProvider,
   serializerCompiler,
   validatorCompiler,
 } from 'fastify-type-provider-zod'
-import { z } from 'zod'
-import { env } from '../env'
-import { completeGoal } from '../functions/complete-goal'
-import { createGoal } from '../functions/create-goal'
-import { getWeekPendingGoals } from '../functions/get-week-pending-goals'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
 
-app.patch(
-  '/goals/:id',
-  {
-    schema: {
-      params: z.object({
-        id: z.string(),
-      }),
-    },
-  },
-  request => completeGoal(request.params)
-)
-app.post(
-  '/goals',
-  {
-    schema: {
-      body: z.object({
-        title: z.string(),
-        desiredWeeklyFrequency: z.number().int().min(1).max(7),
-      }),
-    },
-  },
-  async (request, reply) => {
-    const { title, desiredWeeklyFrequency } = request.body
-
-    await createGoal({
-      title,
-      desiredWeeklyFrequency,
-    }).then(result => {
-      reply.status(201).send(result)
-    })
+// Load all routes from the routes folder
+const files = fs.readdirSync(path.join(__dirname, '../routes'))
+for (const file of files) {
+  const filePath = path.join(__dirname, '../routes', file)
+  if (fs.statSync(filePath).isFile() && file.endsWith('.ts')) {
+    const route = require(filePath)
+    if (typeof route.default === 'function') app.register(route)
   }
-)
-app.get('/goals', getWeekPendingGoals)
+}
 
 app
   .listen({

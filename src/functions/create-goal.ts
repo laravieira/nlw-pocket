@@ -1,5 +1,5 @@
-import db from '../db'
-import { goals } from '../db/schema'
+import db from '@db'
+import { goals } from '@db/schema'
 
 type CreateGoalRequest = {
   title: string
