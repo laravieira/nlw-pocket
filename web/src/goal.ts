@@ -1,5 +1,9 @@
 import axios from 'axios'
 import type { AxiosInstance } from 'axios'
+import dayjs from 'dayjs'
+import weekOfYear from 'dayjs/plugin/weekOfYear'
+
+dayjs.extend(weekOfYear)
 
 export type Summary = {
   completed: number
@@ -37,13 +41,15 @@ class Goal {
     })
   }
 
-  async summary() {
-    return Goal.axios.get('/summary').then(response => {
-      const {
-        data: { summary },
-      } = response
-      return summary as Summary
-    })
+  async summary(week = dayjs().week(), year = dayjs().year()) {
+    return Goal.axios
+      .get(`/summary?week=${week}&year=${year}`)
+      .then(response => {
+        const {
+          data: { summary },
+        } = response
+        return summary as Summary
+      })
   }
 
   async goals() {

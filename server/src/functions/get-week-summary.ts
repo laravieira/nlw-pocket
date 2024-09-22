@@ -1,10 +1,19 @@
 import db from '@db'
 import { goalCompletions, goals } from '@db/schema'
 import dayjs from 'dayjs'
+import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { and, desc, eq, gte, lte, sql } from 'drizzle-orm'
 
-export async function getWeekSummary() {
-  const today = dayjs()
+dayjs.extend(weekOfYear)
+
+type GetWeekSummaryRequest = {
+  week?: number
+  year?: number
+}
+
+export async function getWeekSummary(request: GetWeekSummaryRequest) {
+  const { week: weekNumber = dayjs().week(), year = dayjs().year() } = request
+  const week = dayjs(year.toString(), 'YYYY').week(weekNumber)
 
   const goalsCreatedUpToThisWeek = db.$with('goals_created_up_to_this_week').as(
     db
@@ -18,7 +27,7 @@ export async function getWeekSummary() {
       .where(
         and(
           eq(goals.archived, false),
-          lte(goals.createdAt, today.endOf('week').toDate())
+          lte(goals.createdAt, week.endOf('week').toDate())
         )
       )
   )
@@ -38,8 +47,8 @@ export async function getWeekSummary() {
       .innerJoin(goals, eq(goalCompletions.goalId, goals.id))
       .where(
         and(
-          gte(goalCompletions.completedAt, today.startOf('week').toDate()),
-          lte(goalCompletions.completedAt, today.endOf('week').toDate())
+          gte(goalCompletions.completedAt, week.startOf('week').toDate()),
+          lte(goalCompletions.completedAt, week.endOf('week').toDate())
         )
       )
       .orderBy(desc(goalCompletions.completedAt))
