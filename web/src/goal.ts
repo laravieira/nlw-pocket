@@ -88,6 +88,12 @@ class Goal {
       return true
     })
   }
+
+  async delete(id: string) {
+    return Goal.axios.delete(`/goals/${id}`).then(() => {
+      return true
+    })
+  }
 }
 
 export default Goal
