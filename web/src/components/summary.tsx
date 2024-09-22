@@ -1,6 +1,8 @@
+import Goal from '@/goal.ts'
 import type { Summary as SummaryType } from '@/goal.ts'
 import InOrbitLogo from '@assets/logo.svg'
 import PendingGoals from '@components/pending-goals.tsx'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@ui/button.tsx'
 import { DialogTrigger } from '@ui/dialog.tsx'
 import { Progress, ProgressIndicator } from '@ui/progress-bar.tsx'
@@ -16,6 +18,14 @@ type SummaryProps = {
 }
 
 function Summary({ summary }: SummaryProps) {
+  const queryClient = useQueryClient()
+
+  async function onUndoCompletion(id: string) {
+    await new Goal().uncomplete(id).catch(console.error)
+    await queryClient.invalidateQueries({ queryKey: ['summary'] })
+    await queryClient.invalidateQueries({ queryKey: ['goals'] })
+  }
+
   function renderEmpty() {
     return (
       <p className="text-sm text-zinc-400">
@@ -66,16 +76,13 @@ function Summary({ summary }: SummaryProps) {
     )
   }
 
-  function renderPendingGoals() {
-    return <PendingGoals />
-  }
-
   function renderDayCompletedGoal(goal: {
     id: string
     title: string
+    completion: string
     completedAt: string
   }) {
-    const { id, title, completedAt: time } = goal
+    const { id, title, completion, completedAt: time } = goal
     return (
       <li key={id} className="flex items-center gap-2">
         <CheckCircle2 className="size-4 text-pink-500" />
@@ -87,6 +94,7 @@ function Summary({ summary }: SummaryProps) {
         <button
           type="button"
           className="underline hover:no-underline text-zinc-500 text-sm"
+          onClick={() => onUndoCompletion(completion)}
         >
           Desfazer
         </button>
@@ -96,7 +104,7 @@ function Summary({ summary }: SummaryProps) {
 
   function renderDaySummary([day, goals]: [
     string,
-    { id: string; title: string; completedAt: string }[],
+    { id: string; title: string; completion: string; completedAt: string }[],
   ]) {
     return (
       <div key={day} className="flex flex-col gap-4">
@@ -115,7 +123,6 @@ function Summary({ summary }: SummaryProps) {
   }
 
   function renderWeekSummary() {
-    console.debug(summary)
     return (
       <div className="flex flex-col gap-6">
         <h2 className="text-xl font-medium">Sua semana</h2>
@@ -131,7 +138,7 @@ function Summary({ summary }: SummaryProps) {
       {renderHeader()}
       {renderProgressBar()}
       <Separator />
-      {renderPendingGoals()}
+      <PendingGoals />
       {renderWeekSummary()}
     </div>
   )

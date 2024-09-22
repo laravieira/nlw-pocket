@@ -13,7 +13,7 @@ function PendingGoals() {
   })
 
   async function onCompleteGoal(id: string) {
-    await new Goal().complete(id).then(console.error)
+    await new Goal().complete(id).catch(console.error)
     await queryClient.invalidateQueries({ queryKey: ['summary'] })
     await queryClient.invalidateQueries({ queryKey: ['goals'] })
   }

@@ -8,6 +8,7 @@ export type Summary = {
     [key: string]: {
       id: string
       title: string
+      completion: string
       completedAt: string
     }[]
   } | null
@@ -37,7 +38,7 @@ class Goal {
   }
 
   async summary() {
-    return Goal.axios.get('/week').then(response => {
+    return Goal.axios.get('/summary').then(response => {
       const {
         data: { summary },
       } = response
@@ -64,10 +65,23 @@ class Goal {
       })
   }
 
+  async disable(id: string) {
+    return Goal.axios.delete(`/goals/${id}`).then(response => {
+      const { data } = response
+      return data.goal as GoalType
+    })
+  }
+
   async complete(id: string) {
-    return Goal.axios.patch(`/goals/${id}`).then(response => {
+    return Goal.axios.post(`/completions/${id}`).then(response => {
       const { data } = response
       return data.goalCompletion as Completion
+    })
+  }
+
+  async uncomplete(id: string) {
+    return Goal.axios.delete(`/completions/${id}`).then(() => {
+      return true
     })
   }
 }

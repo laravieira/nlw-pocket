@@ -24,7 +24,11 @@ const createGoalSchema = z.object({
   desiredWeeklyFrequency: z.coerce.number().min(1).max(7),
 })
 
-function CreateGoal() {
+type CreateGoalProps = {
+  setOpenCreateGoal: (open: boolean) => void
+}
+
+function CreateGoal(props: CreateGoalProps) {
   const queryClient = useQueryClient()
   const {
     register,
@@ -47,6 +51,7 @@ function CreateGoal() {
     await queryClient.invalidateQueries({ queryKey: ['summary'] })
     await queryClient.invalidateQueries({ queryKey: ['goals'] })
     reset()
+    props.setOpenCreateGoal(false)
   }
 
   function renderHeader() {

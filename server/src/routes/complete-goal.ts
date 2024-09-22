@@ -3,8 +3,8 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 
 const completeGoalRoute: FastifyPluginAsyncZod = async app => {
-  app.patch(
-    '/goals/:id',
+  app.post(
+    '/completions/:id',
     {
       schema: {
         params: z.object({
