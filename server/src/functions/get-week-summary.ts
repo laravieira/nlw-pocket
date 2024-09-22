@@ -15,7 +15,12 @@ export async function getWeekSummary() {
         createdAt: goals.createdAt,
       })
       .from(goals)
-      .where(lte(goals.createdAt, today.endOf('week').toDate()))
+      .where(
+        and(
+          eq(goals.archived, false),
+          lte(goals.createdAt, today.endOf('week').toDate())
+        )
+      )
   )
 
   const goalCompletedThisWeek = db.$with('goal_completed_this_week').as(

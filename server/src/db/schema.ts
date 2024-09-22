@@ -1,5 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
-import { integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { boolean, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 
 export const goals = pgTable('goals', {
   id: text('id')
@@ -7,6 +7,7 @@ export const goals = pgTable('goals', {
     .$defaultFn(() => createId()),
   title: text('title').notNull(),
   desiredWeeklyFrequency: integer('desired_weekly_frequency').notNull(),
+  archived: boolean('archived').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),

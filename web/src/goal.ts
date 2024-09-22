@@ -65,11 +65,15 @@ class Goal {
       })
   }
 
-  async disable(id: string) {
-    return Goal.axios.delete(`/goals/${id}`).then(response => {
-      const { data } = response
-      return data.goal as GoalType
-    })
+  async archive(id: string, archive = true) {
+    return Goal.axios
+      .patch(`/goals/${id}`, {
+        archive,
+      })
+      .then(response => {
+        const { data } = response
+        return data.goal as GoalType
+      })
   }
 
   async complete(id: string) {
