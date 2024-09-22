@@ -1,3 +1,6 @@
+import Goal from '@/goal.ts'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@ui/button.tsx'
 import {
   DialogClose,
@@ -13,8 +16,39 @@ import {
   RadioGroupItem,
 } from '@ui/radio-group.tsx'
 import { X } from 'lucide-react'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
+
+const createGoalSchema = z.object({
+  title: z.string().min(1, 'Descreva a atividade.').max(255),
+  desiredWeeklyFrequency: z.coerce.number().min(1).max(7),
+})
 
 function CreateGoal() {
+  const queryClient = useQueryClient()
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: zodResolver(createGoalSchema),
+    defaultValues: {
+      title: '',
+      desiredWeeklyFrequency: '3',
+    },
+  })
+
+  async function onCreateGoal(data: z.infer<typeof createGoalSchema>) {
+    await new Goal()
+      .create(data.title, data.desiredWeeklyFrequency)
+      .catch(console.error)
+    await queryClient.invalidateQueries({ queryKey: ['summary'] })
+    await queryClient.invalidateQueries({ queryKey: ['goals'] })
+    reset()
+  }
+
   function renderHeader() {
     return (
       <div className="flex flex-col gap-3">
@@ -41,23 +75,37 @@ function CreateGoal() {
             id="title"
             autoFocus
             placeholder="Praticar exercícios, meditar, etc."
+            {...register('title')}
           />
+          {errors.title && (
+            <p className="text-red-400 text-sm">
+              {errors.title.message as string}
+            </p>
+          )}
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="weekly-frequency">Quantas vezes na semana?</Label>
-          <RadioGroup>
-            {['🥱', '🙂', '😎', '😜', '🤨', '🤯', '🔥'].map((emoji, index) => (
-              <RadioGroupItem key={emoji} value={index + 1}>
-                <RadioGroupIndicator />
-                <span className="text-zinc-300 text-sm font-medium leading-none">
-                  {index === 6
-                    ? 'Todos os dias da semana'
-                    : `${index + 1}x na semana`}
-                </span>
-                <span className="text-lg leading-none">{emoji}</span>
-              </RadioGroupItem>
-            ))}
-          </RadioGroup>
+          <Controller
+            name="desiredWeeklyFrequency"
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <RadioGroup value={value} onValueChange={onChange}>
+                {['🥱', '🙂', '😎', '😜', '🤨', '🤯', '🔥'].map(
+                  (emoji, index) => (
+                    <RadioGroupItem key={emoji} value={`${index + 1}`}>
+                      <RadioGroupIndicator />
+                      <span className="text-zinc-300 text-sm font-medium leading-none">
+                        {index === 6
+                          ? 'Todos os dias da semana'
+                          : `${index + 1}x na semana`}
+                      </span>
+                      <span className="text-lg leading-none">{emoji}</span>
+                    </RadioGroupItem>
+                  )
+                )}
+              </RadioGroup>
+            )}
+          />
         </div>
       </div>
     )
@@ -80,7 +128,12 @@ function CreateGoal() {
     <DialogContent>
       <div className="flex flex-col gap-6 h-full">
         {renderHeader()}
-        <form className="flex-1 flex flex-col justify-between">
+        <form
+          className="flex-1 flex flex-col justify-between"
+          onSubmit={handleSubmit(data =>
+            onCreateGoal(data as unknown as z.infer<typeof createGoalSchema>)
+          )}
+        >
           {renderFormBody()}
           {renderFooter()}
         </form>

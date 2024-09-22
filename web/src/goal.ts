@@ -52,6 +52,18 @@ class Goal {
     })
   }
 
+  async create(title: string, desiredWeeklyFrequency: number) {
+    return Goal.axios
+      .post('/goals', {
+        title,
+        desiredWeeklyFrequency,
+      })
+      .then(response => {
+        const { data } = response
+        return data.goal as GoalType
+      })
+  }
+
   async complete(id: string) {
     return Goal.axios.patch(`/goals/${id}`).then(response => {
       const { data } = response
