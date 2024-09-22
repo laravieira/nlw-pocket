@@ -10,7 +10,7 @@ function App() {
   const [openCreateGoal, setOpenCreateGoal] = useState(false)
   const { data: summary } = useQuery({
     queryKey: ['summary'],
-    queryFn: new Goal().summary,
+    queryFn: () => new Goal().summary(),
     staleTime: 1000 * 60, // 1 minute
   })
 

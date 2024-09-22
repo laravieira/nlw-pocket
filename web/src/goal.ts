@@ -52,8 +52,8 @@ class Goal {
       })
   }
 
-  async goals() {
-    return Goal.axios.get('/goals').then(response => {
+  async goals(archived = false) {
+    return Goal.axios.get(`/goals?archived=${archived}`).then(response => {
       const { data } = response
       return data as GoalType[]
     })

@@ -8,7 +8,7 @@ function PendingGoals() {
   const queryClient = useQueryClient()
   const { data: goals } = useQuery({
     queryKey: ['goals'],
-    queryFn: new Goal().goals,
+    queryFn: () => new Goal().goals(),
     staleTime: 1000 * 60, // 1 minute
   })
 
