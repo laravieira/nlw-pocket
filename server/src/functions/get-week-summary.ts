@@ -7,12 +7,17 @@ import { and, desc, eq, gte, lte, sql } from 'drizzle-orm'
 dayjs.extend(weekOfYear)
 
 type GetWeekSummaryRequest = {
+  user: string
   week?: number
   year?: number
 }
 
 export async function getWeekSummary(request: GetWeekSummaryRequest) {
-  const { week: weekNumber = dayjs().week(), year = dayjs().year() } = request
+  const {
+    user,
+    week: weekNumber = dayjs().week(),
+    year = dayjs().year(),
+  } = request
   const week = dayjs(year.toString(), 'YYYY').week(weekNumber)
 
   const goalsCreatedUpToThisWeek = db.$with('goals_created_up_to_this_week').as(
@@ -26,6 +31,7 @@ export async function getWeekSummary(request: GetWeekSummaryRequest) {
       .from(goals)
       .where(
         and(
+          eq(goals.userId, user),
           eq(goals.archived, false),
           lte(goals.createdAt, week.endOf('week').toDate())
         )

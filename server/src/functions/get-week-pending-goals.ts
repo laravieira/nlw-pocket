@@ -4,11 +4,12 @@ import dayjs from 'dayjs'
 import { and, count, eq, gte, lte, sql } from 'drizzle-orm'
 
 type GetWeekPendingGoalsRequest = {
+  user: string
   archived?: boolean
 }
 
 export async function getWeekPendingGoals(request: GetWeekPendingGoalsRequest) {
-  const { archived = false } = request
+  const { user, archived = false } = request
   const today = dayjs()
 
   const goalsCreatedUpToThisWeek = db.$with('goals_created_up_to_this_week').as(
@@ -24,7 +25,8 @@ export async function getWeekPendingGoals(request: GetWeekPendingGoalsRequest) {
       .where(
         and(
           lte(goals.createdAt, today.endOf('week').toDate()),
-          eq(goals.archived, archived)
+          eq(goals.archived, archived),
+          eq(goals.userId, user)
         )
       )
   )

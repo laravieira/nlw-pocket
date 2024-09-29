@@ -4,11 +4,12 @@ import dayjs from 'dayjs'
 import { and, count, eq, gte, lte, sql } from 'drizzle-orm'
 
 type CompleteGoalProps = {
+  user: string
   id: string
 }
 
 export async function completeGoal(props: CompleteGoalProps) {
-  const { id } = props
+  const { user, id } = props
   const today = dayjs()
 
   const goalCompletionCounts = db.$with('goal_completion_counts').as(
@@ -39,7 +40,7 @@ export async function completeGoal(props: CompleteGoalProps) {
     })
     .from(goals)
     .leftJoin(goalCompletionCounts, eq(goalCompletionCounts.goalId, goals.id))
-    .where(eq(goals.id, id))
+    .where(and(eq(goals.userId, user), eq(goals.id, id)))
     .limit(1)
 
   const [{ desiredWeeklyFrequency, completionCount }] = result

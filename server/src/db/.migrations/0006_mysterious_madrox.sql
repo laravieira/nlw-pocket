@@ -1,0 +1,1 @@
+ALTER TABLE "tokens" ADD COLUMN "type" text DEFAULT 'email-verification' NOT NULL;

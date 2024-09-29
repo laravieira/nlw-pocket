@@ -1,4 +1,6 @@
+import type { users } from '@db/schema'
 import { deleteGoal } from '@functions/delete-goal'
+import type { InferSelectModel } from 'drizzle-orm'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 
@@ -11,8 +13,14 @@ const deleteGoalRoute: FastifyPluginAsyncZod = async app => {
           id: z.string(),
         }),
       },
+      onRequest: request => request.jwtVerify(),
     },
-    request => deleteGoal(request.params)
+    request => {
+      const { id } = request.params
+      const { id: user } = request.user as InferSelectModel<typeof users>
+
+      return deleteGoal({ user, id })
+    }
   )
 }
 

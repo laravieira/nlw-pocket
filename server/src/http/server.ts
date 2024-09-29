@@ -2,6 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { env } from '@/env'
 import fastifyCors from '@fastify/cors'
+import fastifyJwt from '@fastify/jwt'
 import fastify from 'fastify'
 import {
   type ZodTypeProvider,
@@ -11,7 +12,8 @@ import {
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
-app.register(fastifyCors, { origin: '*' })
+app.register(fastifyCors, { origin: env.CORS_ORIGIN })
+app.register(fastifyJwt, { secret: env.JWT_SECRET })
 
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
@@ -30,4 +32,4 @@ app
   .listen({
     port: env.PORT,
   })
-  .then(() => console.log(`Server is running on port ${3000}`))
+  .then(() => console.log(`Server is running on port ${env.PORT}`))

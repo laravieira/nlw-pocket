@@ -1,4 +1,6 @@
+import type { users } from '@db/schema'
 import { archiveGoal } from '@functions/archive-goal'
+import type { InferSelectModel } from 'drizzle-orm'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 
@@ -14,12 +16,15 @@ const archiveGoalRoute: FastifyPluginAsyncZod = async app => {
           archive: z.boolean(),
         }),
       },
+      onRequest: request => request.jwtVerify(),
     },
-    request =>
-      archiveGoal({
-        ...request.params,
-        ...request.body,
-      })
+    request => {
+      const { id } = request.params
+      const { archive } = request.body
+      const { id: user } = request.user as InferSelectModel<typeof users>
+
+      return archiveGoal({ user, id, archive })
+    }
   )
 }
 
